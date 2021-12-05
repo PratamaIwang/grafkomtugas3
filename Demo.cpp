@@ -32,11 +32,11 @@ void Demo::DeInit() {
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
-void Demo::ProcessInput(GLFWwindow *window) {
+void Demo::ProcessInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, true);
 	}
-	
+
 	// zoom camera
 	// -----------
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
@@ -71,8 +71,8 @@ void Demo::ProcessInput(GLFWwindow *window) {
 	// update camera rotation
 	// ----------------------
 	double mouseX, mouseY;
-	double midX = screenWidth/2;
-	double midY = screenHeight/2;
+	double midX = screenWidth / 2;
+	double midY = screenHeight / 2;
 	float angleY = 0.0f;
 	float angleZ = 0.0f;
 
@@ -101,13 +101,10 @@ void Demo::ProcessInput(GLFWwindow *window) {
 	}
 	RotateCamera(-angleY);
 
-
-	
-
 }
 
 void Demo::Update(double deltaTime) {
-	
+	angle += (float)((deltaTime * 0.5f) / 1000);
 }
 
 void Demo::Render() {
@@ -126,7 +123,7 @@ void Demo::Render() {
 	glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
 	// LookAt camera (position, target/direction, up)
-	glm::mat4 view = glm::lookAt(glm::vec3(posCamX, posCamY, posCamZ), glm::vec3(viewCamX, viewCamY, viewCamZ), glm::vec3(upCamX, upCamY, upCamZ));
+	glm::mat4 view = glm::lookAt(glm::vec3(posCamX, posCamY, posCamZ), glm::vec3(viewCamX, viewCamY, viewCamZ), glm::vec3(0, 1, 0));
 	GLint viewLoc = glGetUniformLocation(this->shaderProgram, "view");
 	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 
@@ -320,7 +317,7 @@ void Demo::BuildColoredCube() {
 		-0.5, -0.5, -0.6, 1, 0, // 125
 		-0.5, 0.5, -0.6, 1, 1,  // 126
 		-0.4, 0.5, -0.6, 0, 1,  // 127
-	
+
 		//up
 		// Alas
 		-0.5, 0.6,  0.5, 0, 0, // 128
@@ -395,8 +392,14 @@ void Demo::DrawColoredCube()
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glUniform1i(glGetUniformLocation(this->shaderProgram, "ourTexture"), 0);
 
-	glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+	glm::mat4 model;
+	model = glm::rotate(model, angle, glm::vec3(0, 1, 0));
 
+	GLint modelLoc = glGetUniformLocation(this->shaderProgram, "model");
+	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+	glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+	
 	glDrawElements(GL_TRIANGLES, 200, GL_UNSIGNED_INT, 0);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -456,6 +459,6 @@ void Demo::RotateCamera(float speed)
 
 
 int main(int argc, char** argv) {
-	RenderEngine &app = Demo();
+	RenderEngine& app = Demo();
 	app.Start("Camera: Free Camera Implementation", 800, 600, false, false);
 }
